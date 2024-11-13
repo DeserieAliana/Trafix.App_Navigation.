@@ -1,0 +1,82 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trafix Traffic Map with Navigation</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+</head>
+<body>
+  <h2 style="text-align: center;">Trafix Traffic Map with Navigation</h2>
+  <div id="map" style="height: 600px; width: 100%;"></div>
+
+  <script>
+    // Initialize the map centered on Metro Manila
+    var map = L.map('map').setView([14.6091, 121.0223], 12);
+
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Create a routing control
+    var control = L.Routing.control({
+      waypoints: [],
+      routeWhileDragging: true,
+      createMarker: function(i, waypoint, n) {
+        return L.marker(waypoint.latLng, {
+          draggable: true
+        });
+      }
+    }).addTo(map);
+
+    // Landmark coordinates in Metro Manila
+    const locations = {
+      "Makati City": [14.5547, 121.0244],             // Ayala Center
+      "Quezon City": [14.6760, 121.0437],             // Quezon Memorial Circle
+      "Manila": [14.5995, 120.9842],                  // Rizal Park
+      "Pasig City": [14.5764, 121.0851],              // Ortigas Center
+      "Taguig City": [14.5136, 121.0472],             // Bonifacio Global City
+      "Mandaluyong City": [14.5794, 121.0359],        // SM Megamall
+      "San Juan": [14.6042, 121.0295],                // Greenhills Shopping Center
+      "Pasay City": [14.5378, 120.9920],              // Mall of Asia
+      "Marikina City": [14.6507, 121.1029],           // Marikina Sports Center
+      "Parañaque City": [14.4793, 121.0198],          // Baclaran Church
+      "Las Piñas City": [14.4445, 120.9939],          // Las Piñas Bamboo Organ
+      "Muntinlupa City": [14.4081, 121.0415]          // Alabang Town Center
+    };
+
+    // Add location markers
+    Object.keys(locations).forEach(city => {
+      L.marker(locations[city])
+        .addTo(map)
+        .bindPopup(city)
+        .on('click', function () {
+          // Set the waypoint to the clicked location
+          control.spliceWaypoints(control.getWaypoints().length - 1, 1, L.latLng(locations[city]));
+        });
+    });
+
+    // Search functionality
+    function searchLocation(query) {
+      if (locations[query]) {
+        control.setWaypoints([L.latLng(14.6091, 121.0223), L.latLng(locations[query])]);
+      } else {
+        alert("Location not found. Please select a Metro Manila city.");
+      }
+    }
+
+    // Add a search box
+    var searchBox = L.DomUtil.create('div', 'search-box');
+    searchBox.innerHTML = `
+      <input type="text" id="searchInput" placeholder="Enter a location in Metro Manila" style="width: 80%; padding: 8px;">
+      <button onclick="searchLocation(document.getElementById('searchInput').value)" style="padding: 8px;">Search</button>
+    `;
+    L.DomUtil.get(map.getContainer()).appendChild(searchBox);
+
+  </script>
+</body>
+</html>
